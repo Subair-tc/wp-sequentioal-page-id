@@ -73,24 +73,40 @@ class WP_sequential_pag_ID {
         if ( 'page' === $post->post_type && 'auto-draft' !== $post->post_status){
             global $wpdb;
 
+            $previous_post = $wpdb->get_row("SELECT `ID` FROM bq_posts WHERE ID = 
+            (SELECT MAX(ID) FROM bq_posts WHERE ID < 
+            (SELECT MAX(ID) FROM bq_posts WHERE post_type='page' AND post_status !='auto-draft') 
+            AND post_type='page' AND post_status !='auto-draft') ");
+
+            if( $previous_post->ID ){
+                $previous_post_number = get_post_meta( $previous_post->ID,'page_id_number',true);
+                if( ! $previous_post_number ){
+                    $started_id = $post_id;
+                }
+            } else {
+                $started_id = 1;
+            }
+            
+
             // Check meta already updated.
             $get_page_number = get_post_meta($post_id,'page_id_number',true);
             if ( '' === $get_page_number ) {
-                    // attempt the query up to 3 times for a much higher success rate if it fails (due to Deadlock)
-                    $success = false;
-
-                    for ( $i = 0; $i < 3 && ! $success; $i++ ) {
-
-                        // this seems to me like the safest way to avoid page number clashes
-                        $query = $wpdb->prepare( "
-                            INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value)
-                            SELECT %d, 'page_id_number', IF( MAX( CAST( meta_value as UNSIGNED ) ) IS NULL, %d, MAX( CAST( meta_value as UNSIGNED ) ) + 1 )
-                                FROM {$wpdb->postmeta}
-                                WHERE meta_key='page_id_number'",
-                            $post_id,$post_id );
+                   
+                   if( !$previous_post_number ){
+                       update_post_meta( $post_id,'page_id_number', $post_id );
+                   } else {
+                       $query = $wpdb->prepare( "
+                        INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value)
+                        SELECT %d, 'page_id_number', IF( MAX( CAST( meta_value as UNSIGNED ) ) IS NULL, %d, MAX( CAST( meta_value as UNSIGNED ) ) + 1 )
+                            FROM {$wpdb->postmeta}
+                            WHERE meta_key='page_id_number'",
+                        $post_id,$started_id );
 
                         $success = $wpdb->query( $query );
-                    }
+
+                   }
+
+                    
                 }
         }
 
