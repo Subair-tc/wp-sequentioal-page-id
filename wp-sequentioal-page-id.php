@@ -73,9 +73,9 @@ class WP_sequential_pag_ID {
         if ( 'page' === $post->post_type && 'auto-draft' !== $post->post_status){
             global $wpdb;
 
-            $previous_post = $wpdb->get_row("SELECT `ID` FROM bq_posts WHERE ID = 
-            (SELECT MAX(ID) FROM bq_posts WHERE ID < 
-            (SELECT MAX(ID) FROM bq_posts WHERE post_type='page' AND post_status !='auto-draft') 
+            $previous_post = $wpdb->get_row("SELECT `ID` FROM $wpdb->posts WHERE ID = 
+            (SELECT MAX(ID) FROM $wpdb->posts WHERE ID < 
+            (SELECT MAX(ID) FROM $wpdb->posts WHERE post_type='page' AND post_status !='auto-draft') 
             AND post_type='page' AND post_status !='auto-draft') ");
 
             if( $previous_post->ID ){
@@ -92,7 +92,7 @@ class WP_sequential_pag_ID {
             $get_page_number = get_post_meta($post_id,'page_id_number',true);
             if ( '' === $get_page_number ) {
                    
-                   if( !$previous_post_number ){
+                   if( $previous_post->ID && ! $previous_post_number ){
                        update_post_meta( $post_id,'page_id_number', $post_id );
                    } else {
                        $query = $wpdb->prepare( "
