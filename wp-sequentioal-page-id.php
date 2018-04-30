@@ -3,7 +3,7 @@
 Plugin Name: WP Sequential Page ID
 Plugin URI: https://github.com/Subair-tc/
 Description: Plugin for making the WP pageID Sequential
-Version: 0.1.0
+Version: 0.1.1
 Author: Subair TC
 Author URI: https://github.com/Subair-tc/
 */
@@ -12,15 +12,27 @@ defined( 'ABSPATH' ) or exit;
 
 class WP_sequential_pag_ID {
 
+    
+
+    /**
+	 * Construct the plugin
+	 *
+	 * @since 1.3.2
+	 */
+	public function __construct() {
+
+		add_action( 'plugins_loaded', array( $this, 'init' ) );
+	}
+
     /**
     * Write all Required hooks init
     * @since 0.1.0
     */
-    public static function init(){
-        add_filter('manage_page_posts_columns', __CLASS__ . '::WP_Sequential_page_columns_head', 10);
-        add_action('manage_page_posts_custom_column', __CLASS__ . '::WP_Sequential_page_columns_content', 10, 2);
-        add_filter( 'manage_edit-page_sortable_columns', __CLASS__ . '::WP_Sequential_page_sortable_columns_head' );
-        add_action( 'wp_insert_post', __CLASS__ . '::WP_set_sequential_page_id' , 10, 2 );
+    public function init(){
+        add_filter('manage_page_posts_columns',array( $this, 'WP_Sequential_page_columns_head' ), 10);
+        add_action('manage_page_posts_custom_column',array( $this, 'WP_Sequential_page_columns_content' ), 10, 2);
+        add_filter( 'manage_edit-page_sortable_columns',array( $this, 'WP_Sequential_page_sortable_columns_head' ) );
+        add_action( 'wp_insert_post', array( $this, 'WP_set_sequential_page_id' ) , 10, 2 );
     }
 
     /**
@@ -114,4 +126,4 @@ class WP_sequential_pag_ID {
 
 }
 
-WP_sequential_pag_ID::init();
+$WP_sequential_pag_ID =  new WP_sequential_pag_ID;
