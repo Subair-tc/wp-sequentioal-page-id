@@ -17,7 +17,7 @@ class WP_sequential_pag_ID {
     /**
 	 * Construct the plugin
 	 *
-	 * @since 1.3.2
+	 * @since 0.1.1
 	 */
 	public function __construct() {
 
